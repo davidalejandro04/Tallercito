@@ -1,6 +1,27 @@
-import RPi.GPIO as GPIO  
-import time
-GPIO.setmode(GPIO.BCM)
+import RPi.GPIO as GPIO
+from time import sleep
+import numpy as np
+import math
+
+GPIO.setmode(GPIO.BOARD)
+
+Motor2A = 35
+Motor2B = 37
+
+Motor1A = 29
+Motor1B = 31
+
+GPIO.setup(Motor1A,GPIO.OUT)
+GPIO.setup(Motor1B,GPIO.OUT)
+GPIO.setup(Motor2A,GPIO.OUT)
+GPIO.setup(Motor2B,GPIO.OUT)
+
+pwm=GPIO.PWM(29,40)
+pwm2=GPIO.PWM(35,100)
+
+pwm.start(100)
+pwm2.start(100)
+
 
 class Signal(object):
     """docstring for Interrupt"""
@@ -37,19 +58,7 @@ class Signal(object):
             self.estado = 1
 
         if not int(self.gpio.read(self.pinB)):
-            self.estado = 0                         
-
-def main():
-
-    encoder = Signal(21,20)
-    try:
-        while 1:
-            time.sleep(1)       
-    except KeyboardInterrupt:
-        self.gpio.clear_bank_1(bin(2**20+2**21))
-
-if __name__ == '__main__':
-    main() 
+            self.estado = 0              
 
 
 
@@ -131,3 +140,32 @@ class PID:
 
 	def getDerivator(self):
 		return self.Derivator
+
+
+def forward(v1,v2):
+  
+  pwm.ChangeDutyCycle(v1)
+  pwm2.ChangeDutyCycle(v2)
+
+  GPIO.output(Motor1A,GPIO.HIGH)
+  GPIO.output(Motor1B,GPIO.LOW)
+
+  GPIO.output(Motor2A,GPIO.HIGH)
+  GPIO.output(Motor2B,GPIO.LOW)
+
+  sleep(1)
+
+ 
+  return 
+
+forward(100,100)
+forward(100,10)
+forward(10,100)
+
+pwm.stop()
+pwm2.stop()
+
+GPIO.cleanup()
+
+
+

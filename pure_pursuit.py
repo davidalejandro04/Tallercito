@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import unicycle_model
+import modelito
 import move
 
 Kp = 0.2  
@@ -33,7 +33,7 @@ def pure_pursuit_control(state, cx, cy, pind):
 
     if state.v < 0:  # back
         alpha = math.pi - alpha
-    delta = math.atan2(2.0 * unicycle_model.L * math.sin(alpha) / Lf, 1.0)
+    delta = math.atan2(2.0 * modelito.L * math.sin(alpha) / Lf, 1.0)
 
     return delta, ind
 
@@ -63,7 +63,7 @@ def closed_loop_prediction(cx, cy, cyaw, speed_profile, goal):
     goal_dis = 0.2
     stop_speed = 0.1
 
-    state = unicycle_model.State(x=0.15, y=0.15, yaw=6, v=0.0)
+    state = modelito.State(x=0.15, y=0.15, yaw=6, v=0.0)
 
     time = 0.0
     x = [state.x]
@@ -76,12 +76,12 @@ def closed_loop_prediction(cx, cy, cyaw, speed_profile, goal):
     while T >= time:
         di, target_ind = pure_pursuit_control(state, cx, cy, target_ind)
         ai = PIDControl(speed_profile[target_ind], state.v)
-        state = unicycle_model.update(state, ai, di)
+        state = modelito.update(state, ai, di)
 
         if abs(state.v) <= stop_speed:
             target_ind += 1
 
-        time = time + unicycle_model.dt
+        time = time + modelito.dt
 
         dx = state.x - goal[0]
         dy = state.y - goal[1]
@@ -196,7 +196,7 @@ def main():
 
     T = 15.0  # max simulation time
 
-    state = unicycle_model.State(x=-0.0, y=-3.0, yaw=0.0, v=0.0)
+    state = modelito.State(x=-0.0, y=-3.0, yaw=0.0, v=0.0)
 
     lastIndex = len(cx) - 1
     time = 0.0
@@ -211,16 +211,14 @@ def main():
     while T >= time and lastIndex > target_ind:
         ai = PIDControl(target_speed, state.v)
         di, target_ind = pure_pursuit_control(state, cx, cy, target_ind)
-        state = unicycle_model.update(state, ai, di)
+        state = modelito.update(state, ai, di)
 
-        time = time + unicycle_model.dt
+        time = time + modelito.dt
 
         x.append(state.x)
         y.append(state.y)
         yaw.append(state.yaw)
         v.append(state.v)
-
-	print(state.v)
 
         t.append(time)
 
