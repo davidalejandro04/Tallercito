@@ -1,10 +1,12 @@
 import numpy as np
 import math
-import matplotlib.pyplot as plt
 import unicycle_model
+import move
 
 Kp = 0.2  
 Lf = 0.01 
+animation = False
+
 
 
 def PIDControl(target, current):
@@ -19,7 +21,6 @@ def pure_pursuit_control(state, cx, cy, pind):
     if pind >= ind:
         ind = pind
 
-    #  print(pind, ind)
     if ind < len(cx):
         tx = cx[ind]
         ty = cy[ind]
@@ -32,11 +33,6 @@ def pure_pursuit_control(state, cx, cy, pind):
 
     if state.v < 0:  # back
         alpha = math.pi - alpha
-        #  if alpha > 0:
-        #  alpha = math.pi - alpha
-        #  else:
-        #  alpha = math.pi + alpha
-
     delta = math.atan2(2.0 * unicycle_model.L * math.sin(alpha) / Lf, 1.0)
 
     return delta, ind
@@ -63,13 +59,12 @@ def calc_target_index(state, cx, cy):
 
 def closed_loop_prediction(cx, cy, cyaw, speed_profile, goal):	
 
-    T = 1500.0  # max simulation 
+    T = 15000.0  # max simulation 
     goal_dis = 0.2
     stop_speed = 0.1
 
     state = unicycle_model.State(x=0.15, y=0.15, yaw=6, v=0.0)
 
-    #  lastIndex = len(cx) - 1
     time = 0.0
     x = [state.x]
     y = [state.y]
@@ -88,29 +83,19 @@ def closed_loop_prediction(cx, cy, cyaw, speed_profile, goal):
 
         time = time + unicycle_model.dt
 
-        # check goal
         dx = state.x - goal[0]
         dy = state.y - goal[1]
         if math.sqrt(dx ** 2 + dy ** 2) <= goal_dis:
-            print("Goal")
+            print("Logrado")
             break
 
         x.append(state.x)
         y.append(state.y)
         yaw.append(state.yaw)
         v.append(state.v)
-        t.append(time)
 
-        if target_ind % 20 == 0 and animation:
-            plt.cla()
-            plt.plot(cx, cy, "-r", label="course")
-            plt.plot(x, y, "ob", label="trajectory")
-            plt.plot(cx[target_ind], cy[target_ind], "xg", label="target")
-            plt.axis("equal")
-            plt.grid(True)
-            plt.title("speed:" + str(round(state.v, 2)) +
-                      "tind:" + str(target_ind))
-            plt.pause(0.0001)
+	move.forward(100*abs(state.v),100*abs(state.v*np.cos(state.yaw)))
+        t.append(time)
 
     return t, x, y, yaw, v
 
@@ -141,12 +126,10 @@ def set_stop_point(target_speed, cx, cy, cyaw):
         if is_back and forward:
             speed_profile[i] = 0.0
             forward = False
-            
         elif not is_back and not forward:
             speed_profile[i] = 0.0
             forward = True
-
-            speed_profile[0] = 0.0
+    speed_profile[0] = 0.0
     speed_profile[-1] = 0.0
 
     d.append(d[-1])
@@ -170,7 +153,7 @@ def calc_speed_profile(cx, cy, cyaw, target_speed, a):
             tspeed = speed_profile[i] - a * d[i]
             if tspeed >= speed_profile[i + 1]:
                 speed_profile[i + 1] = tspeed
-    # back integration
+
     for i in range(nsp - 1):
         if speed_profile[- i - 1] >= 0:  # forward
             tspeed = speed_profile[-i] + a * d[-i]
@@ -180,6 +163,7 @@ def calc_speed_profile(cx, cy, cyaw, target_speed, a):
             tspeed = speed_profile[-i] - a * d[-i]
             if tspeed >= speed_profile[-i - 1]:
                 speed_profile[-i - 1] = tspeed
+
 
     return speed_profile
 
@@ -203,7 +187,7 @@ def extend_path(cx, cy, cyaw):
 
 
 def main():
-
+    #  target course
     import numpy as np
     cx = np.arange(0, 50, 0.1)
     cy = [math.sin(ix / 5.0) * ix / 2.0 for ix in cx]
@@ -222,6 +206,7 @@ def main():
     v = [state.v]
     t = [0.0]
     target_ind = calc_target_index(state, cx, cy)
+    print("Holi")
 
     while T >= time and lastIndex > target_ind:
         ai = PIDControl(target_speed, state.v)
@@ -234,8 +219,10 @@ def main():
         y.append(state.y)
         yaw.append(state.yaw)
         v.append(state.v)
+
+	print(state.v)
+
         t.append(time)
-|
 
 def main2():
 
@@ -254,10 +241,13 @@ def main2():
 
     speed_profile = calc_speed_profile(cx, cy, cyaw, target_speed, a)
 
+
+
     t, x, y, yaw, v = closed_loop_prediction(cx, cy, cyaw, speed_profile, goal)
+
+    v=np.asarray(v)
 
 
 if __name__ == '__main__':
-    print("Pure pursuit path tracking simulation start")
-
+    print("Seguimiento de trayectoria iniciado")
     main2()
