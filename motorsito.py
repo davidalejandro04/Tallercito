@@ -24,8 +24,8 @@ pwm2.start(100)
 
 def Forward(v1,v2):
   
-  pwm.ChangeFrequency(v1*.5)
-  pwm2.ChangeFrequency(v2*.5)
+  pwm.ChangeDutyCycle(v1*)
+  pwm2.ChangeDutyCycle(v2*)
 
   GPIO.output(Motor1A,GPIO.HIGH)
   GPIO.output(Motor1B,GPIO.LOW)
