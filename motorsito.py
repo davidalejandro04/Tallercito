@@ -19,6 +19,11 @@ GPIO.setup(Motor1B,GPIO.OUT)
 GPIO.setup(Motor2A,GPIO.OUT)
 GPIO.setup(Motor2B,GPIO.OUT)
 
+pwm=GPIO.PWM(29,v1)
+pwm2=GPIO.PWM(35,v2)
+
+
+
 pwm.start(100)
 pwm2.start(100)
 
